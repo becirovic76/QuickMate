@@ -228,7 +228,7 @@ body {
   display: flex;
   justify-content: center;
   margin-top: 75px;
-  border: 2px solid lime;
+  /* border: 2px solid lime; */
 }
 
 #board-container {
@@ -238,7 +238,7 @@ body {
     justify-content: space-evenly;
     align-items: center;
     width: 75%;
-    border: 1px solid red;
+    /* border: 1px solid red; */
 }
 #button-container {
     display: flex;
