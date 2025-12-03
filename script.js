@@ -1,23 +1,24 @@
 const SPButton = document.getElementById('sp-button');
 const StartButton = document.getElementById('start-btn');
-const showBestMove = document.getElementById('show-best-move-button')
-let config = { position: 'start', draggable: true, onDrop: pieceDropHandler };
+const SPShowBestMove = document.getElementById('sp-show-best-move-button');
+const SPResetButton = document.getElementById('sp-reset-button');
+const SPFlipBoardButton = document.getElementById('sp-flip-board-button');
+
 let selectedDifficulty = 30;
 
 SPButton.addEventListener('click', () => {
     document.getElementById('home-container').style.display = 'none';
     document.getElementById('singleplayer-options').style.display = 'flex';
 });
-
+let board = null;
 const game = new Chess();
 StartButton.addEventListener('click', () => {
-    let selectedColor = 'white';
-    selectedColor = document.querySelector('input[name="color"]:checked').value;
+    let selectedColor = document.querySelector('input[name="color"]:checked').value;
     document.getElementById('singleplayer-options').style.display = 'none';
     console.log(document.querySelector('input[name="difficulty"]:checked').value)
-    switch (document.querySelector('input[name="difficulty"]:checked')) {
+    switch (document.querySelector('input[name="difficulty"]:checked').value) {
         case 'easy':
-            selectedDifficulty = 5;
+            selectedDifficulty = 1;
             break;
         case 'medium':
             selectedDifficulty = 10;
@@ -28,10 +29,10 @@ StartButton.addEventListener('click', () => {
         default:
             selectedDifficulty = 10000;
     }
-    var board = Chessboard('sp-board', {
+    board = Chessboard('sp-board', {
         position: 'start',
         draggable: true,
-
+        orientation: selectedColor,
 
 
 
@@ -46,38 +47,18 @@ StartButton.addEventListener('click', () => {
                 promotion: 'q', // Always promote to queen for simplicity
             });
             if (move === null) return 'snapback'; // Illegal move
-            
-            
-            let cleanFen = game.fen().split(' ');
-            cleanFen[3] = '-';
-            let cleanFen1 = cleanFen.join(' ');
-            
-            postChessApi({ fen: cleanFen1, depth: 30, variants: 2 }).then((data) => {
-                board.draggable = false;
-                console.log('om nom nom')
-                console.log(data)
-                // board.move(`${data.from}-${data.to}`)
-                if (data.isPromotion == true)
-                    game.move({ from: data.from, to: data.to, promotion: data.promotion })
 
-                else
-                    game.move({ from: data.from, to: data.to })
-                board.position(game.fen(),)
-                gameCanBeContinued();
-                board.draggable = true;
-            });
-
-
+            playTheBestMove(game, board);
         },
 
 
         onSnapEnd: () => { board.position(game.fen()); clearAllArrows() }
     });
-    board.orientation(selectedColor);
+
     document.getElementById('sp-board-page').style.display = 'flex';
     board.resize();
     if (selectedColor == 'black') {
-
+        playTheBestMove(game, board)
     }
 });
 
@@ -206,7 +187,7 @@ function clearAllArrows() {
     }
 }
 
-showBestMove.addEventListener('click', () => {
+SPShowBestMove.addEventListener('click', () => {
     //temp fen cleaning:
     let cleanFen = game.fen();
     cleanFen = cleanFen.split(' ');
@@ -229,33 +210,3 @@ async function postChessApi(data = {}) {
     return response.json();
 }
 
-function pieceDropHandler(source, target) {
-    console.log('on drop called')
-    gameCanBeContinued();
-    const move = game.move({
-        from: source,
-        to: target,
-        promotion: 'q', // Always promote to queen for simplicity
-    });
-    if (move === null) return 'snapback'; // Illegal move
-
-
-    let cleanFen = game.fen().split(' ');
-    cleanFen[3] = '-';
-    let cleanFen1 = cleanFen.join(' ');
-
-    postChessApi({ fen: cleanFen1, depth: 30, variants: 2 }).then((data) => {
-        console.log('om nom nom')
-        console.log(data)
-        // board.move(`${data.from}-${data.to}`)
-        if (data.isPromotion == true)
-            game.move({ from: data.from, to: data.to, promotion: data.promotion })
-
-        else
-            game.move({ from: data.from, to: data.to })
-        board.position(game.fen(),)
-        gameCanBeContinued();
-    });
-
-
-}
